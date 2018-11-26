@@ -3,7 +3,6 @@ import requests
 import json
 import sqlite3
 import os
-import time
 
 class Pelicula():
 
@@ -24,7 +23,8 @@ class AbstractApi(ABC):
     @abstractmethod
     def get_pelicula(self, nombre):
         pass
-        """Toma como parametro el nombre de la película y regresa un objeto de tipo película, la clase se que conecte al api implementa esta clase abstracta"""
+        """Toma como parametro el nombre de la película y regresa un objeto de tipo película, la clase que se que conecte al api
+        implementa esta clase abstracta"""
 
 class AbstractDb(ABC):
     @abstractmethod
@@ -34,37 +34,47 @@ class AbstractDb(ABC):
     @abstractmethod
     def insertarPelicula(self, pelicula):
         pass
-        """Toma como parametro un objeto de tipo pelicula y regresa un objeto de tipo pelicula con los nuevos datos,
-        la clase que se conecta a la base de datos implementa este metodo"""
+        """Toma como parametro un objeto de tipo pelicula (obtenido siempre del metodo get_pelicula),
+        y regresa la consulta de la pelicula con sus datos, la clase que se conecta a la base de datos implementa este metodo"""
 
     @abstractmethod
     def agregarTrailer(self, pelicula):
         pass
-        """Toma como parametro un objeto de tipo pelicula y regresa un objeto de tipo pelicula con los nuevos datos,
+        """Toma como parametro un objeto de tipo pelicula, actualiza en la BD y regresa una consulta con los nuevos datos,
         la clase que se conecta a la base de datos implementa este metodo"""
 
 
     @abstractmethod
     def agregarRelacionados(self, pelicula):
         pass
+        """Toma como parametro un objeto de tipo pelicula, actualiza en la BD y regresa una consulta con los nuevos datos,
+        la clase que se conecta a la base de datos implementa este metodo"""
 
     @abstractmethod
     def agregarLink(self, pelicula):
         pass
-
+        """Toma como parametro un objeto de tipo pelicula, actualiza en la BD y regresa una consulta con los nuevos datos,
+        la clase que se conecta a la base de datos implementa este metodo"""
 
     @abstractmethod
     def consultarPelicula(self, pelicula):
         pass
+        """Toma como parametro un objeto de tipo pelicula y regresa una consulta con sus datos,
+        la clase que se conecta a la base de datos implementa este metodo"""
 
     @abstractmethod
     def eliminarPelicula(self, pelicula):
         pass
+        """Toma como parametro un objeto de tipo pelicula, la elimina en la BD y regresa una consulta para verificar
+        que se eliminó, la clase que se conecta a la base de datos implementa este metodo"""
 
     @abstractmethod
     def get_pelicula(self, titulo):
         pass
+        """Toma como parametro el titulo de una pelicula, hace su consulta en la BD y crea un objeto Pelicula con esos datos,
+        la clase que se conecta a la base de datos implementa este metodo"""
 
+#CLASE QUE IMPLEMENTA LOS METODOS DE AbstractDb
 class Sqlitedb(AbstractDb):
     def crearTablaPeliculas(self):
         conn = sqlite3.connect('peliculas.db')
@@ -137,9 +147,6 @@ class Sqlitedb(AbstractDb):
         conn = sqlite3.connect("peliculas.db")
         #seleccionar el cursor para realizar la consulta
         c = conn.cursor()
-        #sql = ("""UPDATE peliculas
-        #SET trailer= "https://youtu.be/JcpWXaA2qeg"
-        #WHERE id= :ID)""", {'ID': pelicula.id})
         if pelicula == None:
             return "No se puede actualizar el trailler de la película porque no está en la base de datos"
         else:
@@ -148,9 +155,6 @@ class Sqlitedb(AbstractDb):
             if verif == []:
                 return "No se puede actualizar el trailler de la película porque no está en la base de datos"
             c.execute("""UPDATE peliculas SET trailer= :trailer WHERE id= :ID""", {'ID': pelicula.id, 'trailer': trailer})
-
-            #terminamos la consulta
-            #guardamos los cambios en la base de datos
             conn.commit()
 
             c.execute("SELECT * FROM PELICULAS WHERE id = :id", {'id': pelicula.id})
@@ -161,11 +165,7 @@ class Sqlitedb(AbstractDb):
 
     def agregarRelacionados(self, pelicula, rel):
         conn = sqlite3.connect("peliculas.db")
-        #seleccionar el cursor para realizar la consulta
         c = conn.cursor()
-        #sql = ("""UPDATE peliculas
-        #SET trailer= "https://youtu.be/JcpWXaA2qeg"
-        #WHERE id= :ID)""", {'ID': pelicula.id})
         if pelicula == None:
             return "No se puede actualizar las películas relacionadas porque la película no está en la base de datos"
         else:
@@ -174,9 +174,6 @@ class Sqlitedb(AbstractDb):
             if verif == []:
                 return "No se puede actualizar las películas relacionadas porque la película no está en la base de datos"
             c.execute("""UPDATE peliculas SET relacionadas= :rel WHERE id= :ID""", {'ID': pelicula.id, 'rel': rel})
-
-            #terminamos la consulta
-            #guardamos los cambios en la base de datos
             conn.commit()
 
             c.execute("SELECT * FROM PELICULAS WHERE id= :ID", {'ID': pelicula.id})
@@ -188,11 +185,7 @@ class Sqlitedb(AbstractDb):
 
     def agregarLink(self, pelicula, link):
         conn = sqlite3.connect("peliculas.db")
-        #seleccionar el cursor para realizar la consulta
         c = conn.cursor()
-        #sql = ("""UPDATE peliculas
-        #SET trailer= "https://youtu.be/JcpWXaA2qeg"
-        #WHERE id= :ID)""", {'ID': pelicula.id})
         if pelicula == None:
             return "No se puede actualizar el link de la película porque no está en la base de datos"
         else:
@@ -201,21 +194,16 @@ class Sqlitedb(AbstractDb):
             if verif == []:
                 return "No se puede actualizar el link de la película porque no está en la base de datos"
             c.execute("""UPDATE peliculas SET link= :LINK WHERE id= :ID""", {'ID': pelicula.id, 'LINK': link})
-
-            #terminamos la consulta
-            #guardamos los cambios en la base de datos
             conn.commit()
 
             c.execute("SELECT * FROM PELICULAS WHERE id= :ID", {'ID': pelicula.id})
             return c.fetchall()
             conn.commit()
-
             #cerramos la conexion a la base de datos
             conn.close()
 
     def consultarPelicula(self, pelicula):
         conexion = sqlite3.connect("peliculas.db")
-        #seleccionar el cursor para realizar la consulta
         c = conexion.cursor()
         if pelicula == None:
             return "La película que buscas no está en la base de datos"
@@ -226,9 +214,6 @@ class Sqlitedb(AbstractDb):
                 return "La película que buscas no está en la base de datos"
         query = c.execute(""" SELECT * FROM peliculas WHERE id= :id """, {'id': pelicula.id})
         return query.fetchall()
-        #for row in query:
-            #print(' ID: {}'.format(row[1])
-        #guardamos los cambios en la base de datos
         conexion.commit()
         #cerramos la conexion a la base de datos
         conexion.close()
@@ -238,8 +223,6 @@ class Sqlitedb(AbstractDb):
         conexion = sqlite3.connect("peliculas.db")
         #seleccionar el cursor para realizar la consulta
         c = conexion.cursor()
-        # c.execute('''SELECT id FROM peliculas WHERE id = :ID''',{'ID': pelicula.id})
-        # id = c.fetchone()
         if pelicula == None:
             return "No se puede eliminar la película porque no está en la base de datos"
         else:
@@ -248,9 +231,6 @@ class Sqlitedb(AbstractDb):
             if verif == []:
                 return "No se puede eliminar la película porque no está en la base de datos"
             c.execute("""DELETE FROM peliculas WHERE id= :id """, {'id':pelicula.id})
-
-            #terminamos la consulta
-            #guardamos los cambios en la base de datos
             conexion.commit()
 
             c.execute("SELECT * FROM PELICULAS WHERE id = :id", {'id':pelicula.id})
@@ -259,11 +239,10 @@ class Sqlitedb(AbstractDb):
             return res
 
             conexion.commit()
-
             #cerramos la conexion a la base de datos
             conexion.close()
 
-#De aqui para abajo es lo que editaremos, es solo una idea
+#CLASE QUE IMPLEMENTA LOS METODOS DE AbstractApi
 class OmdbApi(AbstractApi):
     def __init__(self,urlbase = "http://www.omdbapi.com/?", apikey = "2541db07", headers = {'Content-Type': 'application/json'}):
         self.urlbase = urlbase
@@ -279,34 +258,26 @@ class OmdbApi(AbstractApi):
                 if contenidopelicula['Response'] == "False":
                     return "No se encontró la pelicula en la Api"
                 else:
-                    #print("Información obtenida de la api (OMDBapi): ")
                     for k, v in contenidopelicula.items():
                         if k == 'imdbID':
-                            #print('ID:{}'.format(v))
                             id = v
                         if k == 'Title':
-                            #print('Título:{}'.format(v))
                             titulo = v
                         if k == 'Genre':
-                            #print('Género:{}'.format(v))
                             genero = v
                         if k == 'Released':
-                            #print('Fecha de lanzamiento:{}'.format(v))
                             fecha = v
                         if k == 'Poster':
-                            #print('Póster:{}'.format(v))
                             poster = v
                         if k == 'imdbRating':
-                            #print('Rating:{}'.format(v))
                             rating = v
                         if k == 'Plot':
-                            #print('Sinopsis:{}'.format(v))
                             sinopsis = v
                     pelicula = Pelicula(id,titulo,genero,fecha,poster,rating,sinopsis)
                     print("Se encontró la película {} y se creó su objeto".format(nombrepeli))
                     return pelicula
             else:
-                print('[!] Request Failed')
+                print('Request Fallido')
         else:
             return None
 
@@ -353,9 +324,6 @@ def main():
             print ("")
             peli = input("Has pulsado la opción 2...\nIntroduce el nombre de la película a Eliminar: ")
             obj = sqlite.get_pelicula(peli)
-            # if not obj:
-            #     input('Pulsa una tecla para volver al menú')
-            # else:
             res = sqlite.eliminarPelicula(obj)
             print(res)
             input('Pulsa una tecla para volver al menú')
@@ -438,20 +406,11 @@ def main():
         else:
             print ("")
             input("No has pulsado ninguna opción correcta...\nPulsa una tecla para volver al menú")
-    #Comentar o descomentar los metodos que se quieran probar, comentar crearTablaPeliculas una vez que ya se creo la tabla para
 
-    #pelicula = sqlite.get_pelicula("It")
-
-    #pelicula = api.get_pelicula("It")
-    #sqlite.insertarPelicula(pelicula)
-    #sqlite.agregarTrailer(pelicula)
-    #sqlite.agregarRelacionados(pelicula)
-    #sqlite.agregarLink(pelicula)
-    #sqlite.consultarPelicula(pelicula)
-    #sqlite.eliminarPelicula(pelicula)
 
 if __name__ == '__main__':
     main()
 
     #HACER CONSTRUCTOR EN LA CLASE SQITE PARA DEFINIR ATRIBUTO NOMBRE DE BASE DE DATOS Y QUE EN LOS METODOS DE LAS CONEXIONES
-    #TOME ESE ATRIBUTON Y NO SOLO SIEMPRE "PELICULAS.DB"
+    #TOME ESE ATRIBUTO Y NO SOLO SIEMPRE "PELICULAS.DB"
+    #HACER UN METODO QUE IMPRIMA LOS DATOS DE LA PELICULA PARA NO REPETIR ESE CODIGO EN CADA OPCION
